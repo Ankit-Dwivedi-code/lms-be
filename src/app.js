@@ -26,10 +26,17 @@ app.use(cookieParser());
 
 //routes
 import studentRouter from "./routes/student.route.js";
+import adminRouter from "./routes/admin.route.js"
+import trainerRouter  from './routes/trainer.route.js'
 
 
 
 //routes declaration
 app.use("/api/a2/students", studentRouter)
+app.use("/api/a2/admin", adminRouter)
+app.use("/api/a2/trainer", trainerRouter)
+
+
+
 
 export { app }; // Exporting the app instance for use in other modules

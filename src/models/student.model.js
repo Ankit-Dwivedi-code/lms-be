@@ -19,6 +19,10 @@ const studentSchema = new mongoose.Schema({
         type: String, //cloudinary url
         required:true,
     },
+    avatarPublicId: {
+        type: String,
+        required: false
+    },
     password:{
         type:String,
         required: [true, "Password is required"]

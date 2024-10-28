@@ -27,10 +27,28 @@ const trainerSchema = new mongoose.Schema({
         type: String, // cloudinary URL
         required: true,
     },
+    avatarPublicId: {
+        type: String,
+        required: false
+    },
+    otp: {
+        type: String
+    }, 
+    otpExpires: {
+        type: Date
+    },
     subjectname: {
         type: String,
         required: true,
     },
+    isVerified: {
+        type: Boolean,
+        default: false,
+      },
+    courses:{
+        type:mongoose.Types.ObjectId,
+        ref:"Course"
+    }
 }, { timestamps: true });
 
 // Hash password before saving if modified
