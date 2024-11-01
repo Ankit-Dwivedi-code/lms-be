@@ -7,6 +7,7 @@ import { generateOtp } from '../utils/otpGenerator.js';
 import { sendMail } from '../utils/sendEmail.js';
 import jwt from 'jsonwebtoken';
 
+
 // Function to generate access and refresh tokens
 const generateAccessAndRefreshTokens = async (trainerId) => {
     try {
@@ -19,44 +20,46 @@ const generateAccessAndRefreshTokens = async (trainerId) => {
 
         return { accessToken, refreshToken };
     } catch (error) {
+        console.error('Error generating tokens:', error);
         throw new ApiError(500, "Internal server error while generating access and refresh token");
     }
 };
 
 // Register a new trainer
 const registerTrainer = asyncHandler(async (req, res) => {
-    const { username, email, password,uniqueCode, subjectname } = req.body;
+    const { username, email, password, uniqueCode, subjectname } = req.body;
 
     if ([username, email, password, uniqueCode, subjectname].some(field => !field)) {
         throw new ApiError(400, 'All required fields must be provided');
     }
 
-    const existingtrainer = await Trainer.findOne({ 
+    const existingTrainer = await Trainer.findOne({ 
         $or: [
             { email },
             { uniqueCode }
         ]
-     });
-    if (existingtrainer) {
-        throw new ApiError(409, 'trainer already exists');
+    });
+
+    if (existingTrainer) {
+        throw new ApiError(409, 'Trainer already exists');
     }
 
     const avatarLocalPath = req.files?.avatar?.[0]?.path;
     if (!avatarLocalPath) {
         throw new ApiError(400, 'Avatar image is required');
-      }
+    }
 
     const avatar = await uploadOnCloudinary(avatarLocalPath);
-  if (!avatar) {
-    throw new ApiError(500, 'Failed to upload avatar image');
-  }
+    if (!avatar) {
+        throw new ApiError(500, 'Failed to upload avatar image');
+    }
 
-  const { otp, otpExpires } = generateOtp();
-  if (!otp || !otpExpires) {
-    throw new ApiError(500, 'Internal server error');
-  }
+    const { otp, otpExpires } = generateOtp();
+    if (!otp || !otpExpires) {
+        throw new ApiError(500, 'Internal server error');
+    }
 
-  await sendMail(email, otp);
+    await sendMail(email, otp);
 
     const trainer = new Trainer({
         username,
@@ -77,9 +80,76 @@ const registerTrainer = asyncHandler(async (req, res) => {
     );
 });
 
-
-//Verify signup otp
+// Verify signup OTP
 const verifyOtp = asyncHandler(async (req, res) => {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+        throw new ApiError(400, 'Email and OTP are required');
+    }
+
+    const trainer = await Trainer.findOne({ email });
+
+    if (!trainer || trainer.isVerified) {
+        throw new ApiError(400, 'Invalid or already verified trainer');
+    }
+
+    if (trainer.otp !== otp || trainer.otpExpires < Date.now()) {
+        throw new ApiError(400, 'Invalid or expired OTP');
+    }
+
+    trainer.isVerified = true;
+    trainer.otp = undefined;
+    trainer.otpExpires = undefined;
+    await trainer.save();
+
+    const verifiedTrainer = await Trainer.findById(trainer._id).select('-password -refreshToken');
+
+    return res.status(200).json(
+        new ApiResponse(200, verifiedTrainer, 'Trainer verified and registered successfully')
+    );
+});
+
+// Login a trainer
+const loginTrainer = asyncHandler(async (req, res) => {
+    const { email, password } = req.body;
+  
+    if (!email || !password) {
+      throw new ApiError(400, "Email and password are required");
+    }
+  
+    const trainer = await Trainer.findOne({ email });
+    if (!trainer) {
+      throw new ApiError(401, "Invalid email or password");
+    }
+  
+    const isPasswordCorrect = await trainer.isPasswordCorrect(password);
+    if (!isPasswordCorrect) {
+      throw new ApiError(401, "Invalid email or password");
+    }
+  
+    const { otp, otpExpires } = generateOtp();
+    if (!otp || !otpExpires) {
+      throw new ApiError(500, "Internal server error");
+    }
+  
+    await sendMail(email, otp);
+  
+    trainer.otp = otp;
+    trainer.otpExpires = otpExpires;
+    trainer.isVerified = false;
+    await trainer.save({ validateBeforeSave: false });
+  
+    return res.status(200).json(
+      new ApiResponse(200, { email }, 'OTP sent to your email for verification')
+    );
+  });
+
+
+
+  //verify-login trainer
+
+  const verifyLoginOtp = asyncHandler(async (req, res) => {
     const { email, otp } = req.body;
   
     if (!email || !otp) {
@@ -88,8 +158,8 @@ const verifyOtp = asyncHandler(async (req, res) => {
   
     const trainer = await Trainer.findOne({ email });
   
-    if (!trainer || trainer.isVerified) {
-      throw new ApiError(400, 'Invalid or already verified trainer');
+    if (!trainer) {
+      throw new ApiError(400, 'Invalid trainer');
     }
   
     if (trainer.otp !== otp || trainer.otpExpires < Date.now()) {
@@ -100,51 +170,33 @@ const verifyOtp = asyncHandler(async (req, res) => {
     trainer.otp = undefined;
     trainer.otpExpires = undefined;
     await trainer.save();
+
+    // console.log("Trainer id", trainer._id); 
+    
   
-    const verifiedTrainer = await Trainer.findById(trainer._id).select('-password -refreshToken');
-  
-    return res.status(200).json(
-      new ApiResponse(200, verifiedTrainer, 'Trainer verified and registered successfully')
-    );
-  });
-
-// Login a trainer
-const logintrainer = asyncHandler(async (req, res) => {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-        throw new ApiError(400, "Email and password are required");
-    }
-
-    const trainer = await trainer.findOne({ email });
-    if (!trainer || !(await trainer.isPasswordCorrect(password))) {
-        throw new ApiError(401, "Invalid email or password");
-    }
-
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(trainer._id);
-
-    trainer.refreshToken = refreshToken;
-    await trainer.save();
-
+  
     const options = {
-        httpOnly: true,
-        secure: true,
+      httpOnly: true,
+      secure: true,
     };
 
     return res
-        .status(200)
-        .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", refreshToken, options)
-        .json(new ApiResponse(200, { accessToken, refreshToken }, "trainer logged in successfully"));
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(new ApiResponse(200, { accessToken, refreshToken }, "Student verified and logged in successfully"));
 });
 
+  
+
 // Logout a trainer
-const logouttrainer = asyncHandler(async (req, res) => {
+const logoutTrainer = asyncHandler(async (req, res) => {
     const trainerId = req.trainer._id;
 
-    const trainer = await trainer.findById(trainerId);
+    const trainer = await Trainer.findById(trainerId);
     if (!trainer) {
-        throw new ApiError(400, "trainer not found");
+        throw new ApiError(400, "Trainer not found");
     }
 
     trainer.refreshToken = null;
@@ -153,7 +205,7 @@ const logouttrainer = asyncHandler(async (req, res) => {
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
 
-    return res.status(200).json(new ApiResponse(200, {}, "trainer logged out successfully"));
+    return res.status(200).json(new ApiResponse(200, {}, "Trainer logged out successfully"));
 });
 
 // Renew refresh token
@@ -167,7 +219,10 @@ const renewRefreshToken = asyncHandler(async (req, res) => {
             throw new ApiError(401, "Unauthorized request");
         }
 
-        const trainer = await trainer.findById(decodedToken._id);
+        const trainer = await Trainer.findById(decodedToken._id);
+
+        // console.log(trainer);
+        
 
         if (!trainer || token !== trainer.refreshToken) {
             throw new ApiError(401, "Invalid refresh token");
@@ -229,7 +284,7 @@ const updatetrainerAvatar = asyncHandler(async (req, res) => {
     }
 
     const trainer = await trainer.findByIdAndUpdate(req.trainer._id,
-        { $set: { avatar: avatar.url } },
+        { $set: [{ avatar: avatar.url }, {avatarPublicId: avatar.public_id}] },
         { new: true }
     ).select("-password");
 
@@ -242,20 +297,16 @@ const updatetrainerAvatar = asyncHandler(async (req, res) => {
 
 // Update trainer details
 const updatetrainerDetails = asyncHandler(async (req, res) => {
-    const { name, email, phone, address, department, subjects, highestQualification } = req.body;
+    const { username, email, subjectname  } = req.body;
 
-    if (![name, email, phone, address, department, subjects, highestQualification].some(field => field)) {
+    if (![username, email, subjectname ].some(field => field)) {
         throw new ApiError(400, "Please provide at least one detail to update");
     }
 
     const updateFields = {};
-    if (name) updateFields.name = name;
+    if (username) updateFields.username = username;
     if (email) updateFields.email = email;
-    if (phone) updateFields.phone = phone;
-    if (address) updateFields.address = address;
-    if (department) updateFields.department = department;
-    if (subjects) updateFields.subjects = subjects;
-    if (highestQualification) updateFields.highestQualification = highestQualification;
+    if (subjectname) updateFields.subjectname = subjectname;
 
     const trainer = await trainer.findByIdAndUpdate(req.trainer._id,
         { $set: updateFields },
@@ -263,20 +314,92 @@ const updatetrainerDetails = asyncHandler(async (req, res) => {
     ).select("-password");
 
     if (!trainer) {
-        throw new ApiError(400, "trainer not found");
+        throw new ApiError(400, "Trainer not found");
     }
 
-    return res.status(200).json(new ApiResponse(200, trainer, "trainer details updated successfully"));
+    return res.status(200).json(new ApiResponse(200, trainer, "Trainer details updated successfully"));
+});
+
+// Resend OTP
+const resendOtp = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+
+    const trainer = await Trainer.findOne({ email });
+    if (!trainer || trainer.isVerified) {
+        throw new ApiError(400, 'Invalid or already verified trainer');
+    }
+
+    const { otp, otpExpires } = generateOtp();
+    trainer.otp = otp;
+    trainer.otpExpires = otpExpires;
+    await trainer.save();
+
+    await sendMail(email, otp);
+    return res.status(200).json(new ApiResponse(200, { email }, 'OTP resent to your email'));
+});
+
+
+
+// Forgot Password
+const forgotPassword = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+
+    const trainer = await Trainer.findOne({ email });
+    if (!trainer) {
+        throw new ApiError(404, 'Trainer not found');
+    }
+
+    const { otp, otpExpires } = generateOtp();
+    trainer.otp = otp;
+    trainer.otpExpires = otpExpires;
+    await trainer.save();
+
+    await sendMail(email, otp);
+    return res.status(200).json(new ApiResponse(200, { email }, 'OTP sent to your email for password reset'));
+});
+
+// Verify OTP for Forgot Password
+const verifyOtpForForgotPassword = asyncHandler(async (req, res) => {
+    const { email, otp } = req.body;
+
+    const trainer = await Trainer.findOne({ email });
+    if (!trainer || trainer.isVerified || trainer.otp !== otp || trainer.otpExpires < Date.now()) {
+        throw new ApiError(400, 'Invalid or expired OTP');
+    }
+
+    return res.status(200).json(new ApiResponse(200, {}, 'OTP verified successfully'));
+});
+
+// Renew Password
+const renewPassword = asyncHandler(async (req, res) => {
+    const { email, otp, newPassword } = req.body;
+
+    const trainer = await Trainer.findOne({ email });
+    if (!trainer || trainer.otp !== otp || trainer.otpExpires < Date.now()) {
+        throw new ApiError(400, 'Invalid or expired OTP');
+    }
+
+    trainer.password = newPassword;
+    trainer.otp = undefined;
+    trainer.otpExpires = undefined;
+    await trainer.save({ validateBeforeSave: false });
+
+    return res.status(200).json(new ApiResponse(200, {}, 'Password changed successfully'));
 });
 
 export {
     registerTrainer,
     verifyOtp,
-    logintrainer,
-    logouttrainer,
+    loginTrainer,
+    logoutTrainer,
     renewRefreshToken,
     changeCurrentPassword,
     getCurrenttrainer,
     updatetrainerAvatar,
-    updatetrainerDetails
+    updatetrainerDetails,
+    resendOtp,
+    forgotPassword,
+    verifyOtpForForgotPassword,
+    renewPassword,
+    verifyLoginOtp
 };

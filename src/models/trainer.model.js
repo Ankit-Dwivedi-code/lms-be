@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
+import jwt from 'jsonwebtoken'
 
 const trainerSchema = new mongoose.Schema({
     username: {
@@ -48,6 +49,9 @@ const trainerSchema = new mongoose.Schema({
     courses:{
         type:mongoose.Types.ObjectId,
         ref:"Course"
+    },
+    refreshToken:{
+        type:String
     }
 }, { timestamps: true });
 
