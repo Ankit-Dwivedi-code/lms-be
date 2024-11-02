@@ -39,7 +39,12 @@ const studentSchema = new mongoose.Schema({
     }, 
     refreshToken:{
         type:String
-    }
+    }, enrolledCourses: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Course' // Reference to the Course model
+        }
+    ]
 }, {timestamps: true})
 
 studentSchema.pre("save", async function (next){

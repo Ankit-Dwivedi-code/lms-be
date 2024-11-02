@@ -6,6 +6,7 @@ import { ApiResponse } from '../utils/apiResponse.js';
 import { generateOtp } from '../utils/otpGenerator.js';
 import { sendMail } from '../utils/sendEmail.js';
 import jwt from 'jsonwebtoken';
+import {InviteCode} from '../models/invite.model.js'
 
 
 // Function to generate access and refresh tokens
@@ -44,6 +45,12 @@ const registerTrainer = asyncHandler(async (req, res) => {
         throw new ApiError(409, 'Trainer already exists');
     }
 
+    // Check if the invite code exists and is not already used
+    const invite = await InviteCode.findOne({ code: uniqueCode, used: false });
+    if (!invite) {
+        throw new ApiError(400, 'Invalid or already used invite code');
+    }
+
     const avatarLocalPath = req.files?.avatar?.[0]?.path;
     if (!avatarLocalPath) {
         throw new ApiError(400, 'Avatar image is required');
@@ -74,6 +81,10 @@ const registerTrainer = asyncHandler(async (req, res) => {
     });
 
     await trainer.save();
+
+    // Mark the invite code as used
+    invite.used = true;
+    await invite.save();
 
     return res.status(201).json(
         new ApiResponse(201, { email }, 'OTP sent to your email')

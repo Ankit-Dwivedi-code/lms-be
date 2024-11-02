@@ -7,6 +7,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { generateOtp } from '../utils/otpGenerator.js';
 import { sendMail } from '../utils/sendEmail.js';
+import { Course } from '../models/course.model.js';
 import jwt from "jsonwebtoken";
 
 const generateAccessAndRefreshTokens = async (adminId) => {
@@ -472,8 +473,65 @@ const forgotPassword = asyncHandler(async (req, res) => {
     )
   })
 
+  //make course publish
+  // Function to publish a course
+const publishCourse = async (req, res) => {
+  try {
+      const { courseId } = req.params;
 
-  
+      // Find the course by ID and update its isPublished status
+      const course = await Course.findByIdAndUpdate(
+          courseId,
+          { isPublished: true }, // Change 'isPublished' to match your schema field name if different
+          { new: true }
+      );
+
+      if (!course) {
+          return res.status(404).json({ message: 'Course not found' });
+      }
+
+      res.status(200).json({
+          message: 'Course published successfully',
+          course,
+      });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server error' });
+  }
+};
 
 
-export { registerAdmin,verifyOtp, loginAdmin, verifyLoginOtp, generateInviteCode, logoutAdmin, renewRefreshToken };
+  // Delete a student by ID
+const deleteStudent = asyncHandler(async (req, res) => {
+  const { studentId } = req.params;
+
+  const deletedStudent = await Student.findByIdAndDelete(studentId);
+
+  if (!deletedStudent) {
+    throw new ApiError(404, 'Student not found');
+  }
+
+  return res.status(200).json(
+    new ApiResponse(200, {}, 'Student deleted successfully')
+  );
+});
+
+
+// Delete a trainer by ID
+const deleteTrainer = asyncHandler(async (req, res) => {
+  const { trainerId } = req.params;
+
+  const deletedTrainer = await Trainer.findByIdAndDelete(trainerId);
+
+  if (!deletedTrainer) {
+    throw new ApiError(404, 'Trainer not found');
+  }
+
+  return res.status(200).json(
+    new ApiResponse(200, {}, 'Trainer deleted successfully')
+  );
+});
+
+
+
+export { registerAdmin,verifyOtp, loginAdmin, verifyLoginOtp, generateInviteCode, logoutAdmin, renewRefreshToken , publishCourse, deleteStudent, deleteTrainer};

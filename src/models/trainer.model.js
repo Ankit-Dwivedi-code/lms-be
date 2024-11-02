@@ -16,9 +16,9 @@ const trainerSchema = new mongoose.Schema({
         trim: true,
     },
     uniqueCode: {
-        type: String,
+        type: String, // Reference to InviteCode
+        unique:true,
         required: true,
-        unique: true,
     },
     password: {
         type: String,

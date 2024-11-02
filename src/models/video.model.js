@@ -28,6 +28,11 @@ const videoSchema = new mongoose.Schema({
         ref: "Trainer", // Referencing the Trainer model
         required: true,
     },
+    course: {  
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Course', 
+        required: true 
+    }
 }, { timestamps: true });
 
 videoSchema.plugin(mongooseAggregatePaginate);

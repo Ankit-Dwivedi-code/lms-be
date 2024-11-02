@@ -28,6 +28,10 @@ app.use(cookieParser());
 import studentRouter from "./routes/student.route.js";
 import adminRouter from "./routes/admin.route.js"
 import trainerRouter  from './routes/trainer.route.js'
+import videoRouter from './routes/video.route.js'
+import courseRouter from './routes/course.route.js'
+import paymentRouter from './routes/payment.route.js'
+
 
 
 
@@ -35,6 +39,9 @@ import trainerRouter  from './routes/trainer.route.js'
 app.use("/api/a2/students", studentRouter)
 app.use("/api/a2/admin", adminRouter)
 app.use("/api/a2/trainer", trainerRouter)
+app.use("/api/a2/videos", videoRouter)
+app.use("/api/a2/course", courseRouter)
+app.use("/api/a2/payment", paymentRouter)
 
 
 

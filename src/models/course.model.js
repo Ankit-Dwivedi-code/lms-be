@@ -1,4 +1,3 @@
-// models/courseModel.js
 import mongoose from 'mongoose';
 
 // Define the Course schema
@@ -10,7 +9,7 @@ const courseSchema = new mongoose.Schema({
     },
     owner: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Trainer', // Assuming a 'Teacher' model exists
+        ref: 'Trainer',
         required: true
     },
     description: {
@@ -21,7 +20,7 @@ const courseSchema = new mongoose.Schema({
     courseVideos: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Video' // Referencing the Video model
+            ref: 'Video'
         }
     ],
     tags: {
@@ -46,6 +45,11 @@ const courseSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    approvalStatus: {
+        type: String,
+        enum: ['Pending', 'Approved', 'Rejected'],
+        default: 'Pending'
+    },
     price: {
         type: Number,
         default: 0
@@ -56,6 +60,46 @@ const courseSchema = new mongoose.Schema({
             ref: 'Student'
         }
     ],
+    thumbnail: {
+        type: String
+    },
+    ratings: {
+        type: Number,
+        min: 0,
+        max: 5,
+        default: 0
+    },
+    reviews: [
+        {
+            student: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Student'
+            },
+            reviewText: {
+                type: String,
+                trim: true
+            },
+            rating: {
+                type: Number,
+                min: 0,
+                max: 5
+            },
+            createdAt: {
+                type: Date,
+                default: Date.now
+            }
+        }
+    ],
+    prerequisites: {
+        type: [String],
+        default: []
+    },
+    duration: {
+        type: String
+    },
+    publishedAt: {
+        type: Date
+    }
 }, { timestamps: true });
 
 export const Course = mongoose.model('Course', courseSchema);
