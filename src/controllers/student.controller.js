@@ -24,9 +24,9 @@ const generateAccessAndRefreshTokens = async (studentId) => {
 };
 
 const registerStudent = asyncHandler(async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, password,phone, highestQualification,dateOfBirth } = req.body;
 
-  if ([username, email, password].some((field) => !field)) {
+  if ([username, email, password, phone, highestQualification, dateOfBirth].some((field) => !field)) {
     throw new ApiError(400, 'All fields are required');
   }
 
@@ -56,6 +56,9 @@ const registerStudent = asyncHandler(async (req, res) => {
     username,
     email,
     password,
+    phone,
+    highestQualification,
+    dateOfBirth,
     avatar: avatar.url,
     avatarPublicId: avatar.public_id,
     otp,

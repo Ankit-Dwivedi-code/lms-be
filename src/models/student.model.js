@@ -13,11 +13,25 @@ const studentSchema = new mongoose.Schema({
         required:true,
         unique: true,
         lowercase:true,
-        trim:true
+        trim:true,
+        match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, // Regex for email validation
     },
     avatar:{
         type: String, //cloudinary url
         required:true,
+    },
+    phone:{
+        type: String,
+        required: true,
+        match: /^\+?[1-9]\d{1,14}$/,
+    },
+    highestQualification:{
+        type:String,
+        required: true
+    },
+    dateOfBirth:{
+        type:Date,
+        required: true
     },
     avatarPublicId: {
         type: String,
