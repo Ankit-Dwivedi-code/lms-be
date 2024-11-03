@@ -45,7 +45,7 @@ router.route("/renew-refresh-token").post(verifyAdmin, renewRefreshToken)
 router.route("/update-details").patch(verifyAdmin, updateAdminDetails)
 
 //update admin avatar
-router.route("update-avatar").patch(verifyAdmin, updateAdminAvatar)
+router.route("update-avatar").patch(verifyAdmin,upload.single("avatar"), updateAdminAvatar)
 
 //change current password
 router.route("/change-current-password").patch(verifyAdmin, changeCurrentPassword)
