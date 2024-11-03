@@ -1,5 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Admin } from "../models/admin.model.js";
+import { Student } from "../models/student.model.js";
+import { Trainer } from '../models/trainer.model.js';
 import { InviteCode } from "../models/invite.model.js";
 import { ulid } from "ulid";
 import { ApiError } from "../utils/apiError.js";
@@ -482,7 +484,7 @@ const publishCourse = async (req, res) => {
       // Find the course by ID and update its isPublished status
       const course = await Course.findByIdAndUpdate(
           courseId,
-          { isPublished: true }, // Change 'isPublished' to match your schema field name if different
+          { isPublished: true, approvalStatus:"Approved" }, // Change 'isPublished' to match your schema field name if different
           { new: true }
       );
 
@@ -534,4 +536,21 @@ const deleteTrainer = asyncHandler(async (req, res) => {
 
 
 
-export { registerAdmin,verifyOtp, loginAdmin, verifyLoginOtp, generateInviteCode, logoutAdmin, renewRefreshToken , publishCourse, deleteStudent, deleteTrainer};
+export { 
+  registerAdmin,
+  verifyOtp, 
+  loginAdmin,
+  verifyLoginOtp, 
+  generateInviteCode, 
+  logoutAdmin,
+  renewRefreshToken,
+  publishCourse,
+  deleteStudent,
+  deleteTrainer,
+  updateAdminDetails,
+  updateAdminAvatar,
+  changeCurrentPassword,
+  forgotPassword,
+  verifyForgotPasswordOtp,
+  resetPassword
+};

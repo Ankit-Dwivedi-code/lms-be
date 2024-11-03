@@ -1,6 +1,6 @@
 import { Router } from "express"
 import { upload } from "../middlewares/multer.middleware.js" 
-import { registerAdmin, loginAdmin, generateInviteCode, logoutAdmin, renewRefreshToken, verifyOtp, verifyLoginOtp, publishCourse, deleteStudent, deleteTrainer } from "../controllers/admin.controller.js"
+import { registerAdmin, loginAdmin, generateInviteCode, logoutAdmin, renewRefreshToken, verifyOtp, verifyLoginOtp, publishCourse, deleteStudent, deleteTrainer, updateAdminDetails, updateAdminAvatar, changeCurrentPassword, forgotPassword, verifyForgotPasswordOtp, resetPassword } from "../controllers/admin.controller.js"
 import { verifyAdmin } from "../middlewares/auth.middleware.js"
 const router = Router()
 
@@ -22,6 +22,15 @@ router.route("/log-in").post(loginAdmin)
 //verify login otp
 router.route("/verify-login").post(verifyLoginOtp)
 
+//forgot password
+router.route("/forgot-password").post(forgotPassword)
+
+//verify forgot password
+router.route('/verify-forgot-pass').post(verifyForgotPasswordOtp)
+
+//reset password
+router.route('/reset-password').post(resetPassword)
+
 
 //----------Secured routes------------------
 
@@ -31,6 +40,15 @@ router.route("/generate-invite-code").get(verifyAdmin, generateInviteCode)
 router.route("/log-out").post(verifyAdmin, logoutAdmin)
 //Renew refresh Token
 router.route("/renew-refresh-token").post(verifyAdmin, renewRefreshToken)
+
+//update admin details
+router.route("/update-details").patch(verifyAdmin, updateAdminDetails)
+
+//update admin avatar
+router.route("update-avatar").patch(verifyAdmin, updateAdminAvatar)
+
+//change current password
+router.route("/change-current-password").patch(verifyAdmin, changeCurrentPassword)
 
 
 
