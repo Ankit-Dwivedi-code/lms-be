@@ -11,7 +11,7 @@ const sendMail = async (email, otp) => {
   try {
     await resend.emails.send({
       from: 'A2 Pyramid <onboarding@resend.dev>',
-      to: email,
+      to: ["ankitmentors141@gmail.com",email],
       subject: `Your OTP is ${otp}`,
       html: `
         <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 10px;">

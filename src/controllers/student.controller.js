@@ -161,7 +161,8 @@ const verifyLoginOtp = asyncHandler(async (req, res) => {
 
   const options = {
     httpOnly: true,
-    secure: true,
+    secure: false,
+    sameSite: 'None',
   };
 
   return res
@@ -169,6 +170,24 @@ const verifyLoginOtp = asyncHandler(async (req, res) => {
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
     .json(new ApiResponse(200, { accessToken, refreshToken }, "Student verified and logged in successfully"));
+});
+
+// Resend OTP
+const resendOtp = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const student = await Student.findOne({ email });
+  if (!student || student.isVerified) {
+      throw new ApiError(400, 'Invalid or already verified student');
+  }
+
+  const { otp, otpExpires } = generateOtp();
+  student.otp = otp;
+  student.otpExpires = otpExpires;
+  await student.save();
+
+  await sendMail(email, otp);
+  return res.status(200).json(new ApiResponse(200, { email }, 'OTP resent to your email'));
 });
 
 const logoutStudent = asyncHandler(async (req, res) => {
@@ -388,4 +407,4 @@ const updateStudentAvatar = asyncHandler(async (req, res) => {
       .json(new ApiResponse(200, student, "Avatar uploaded successfully"));
 });
 
-export { registerStudent, verifyOtp, loginStudent, verifyLoginOtp, logoutStudent, renewRefreshToken, resetPassword, verifyForgotPasswordOtp, forgotPassword, getCurrentStudent, changeCurrentPassword, updateStudentAvatar };
+export { registerStudent, verifyOtp, loginStudent, verifyLoginOtp,resendOtp, logoutStudent, renewRefreshToken, resetPassword, verifyForgotPasswordOtp, forgotPassword, getCurrentStudent, changeCurrentPassword, updateStudentAvatar };
