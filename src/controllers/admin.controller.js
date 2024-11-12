@@ -502,6 +502,13 @@ const publishCourse = async (req, res) => {
   }
 };
 
+const getAdmin = asyncHandler(async(req, res)=>{
+  return res.status(200)
+  .json(
+    new ApiResponse(200, req.admin, "Admin fetched successfully!")
+  )
+})
+
 
   // Delete a student by ID
 const deleteStudent = asyncHandler(async (req, res) => {
@@ -552,5 +559,6 @@ export {
   changeCurrentPassword,
   forgotPassword,
   verifyForgotPasswordOtp,
-  resetPassword
+  resetPassword,
+  getAdmin
 };

@@ -1,6 +1,6 @@
 import { Router } from "express"
 import { upload } from "../middlewares/multer.middleware.js" 
-import { registerAdmin, loginAdmin, generateInviteCode, logoutAdmin, renewRefreshToken, verifyOtp, verifyLoginOtp, publishCourse, deleteStudent, deleteTrainer, updateAdminDetails, updateAdminAvatar, changeCurrentPassword, forgotPassword, verifyForgotPasswordOtp, resetPassword } from "../controllers/admin.controller.js"
+import { registerAdmin, loginAdmin, generateInviteCode, logoutAdmin, renewRefreshToken, verifyOtp, verifyLoginOtp, publishCourse, deleteStudent, deleteTrainer, updateAdminDetails, updateAdminAvatar, changeCurrentPassword, forgotPassword, verifyForgotPasswordOtp, resetPassword, getAdmin } from "../controllers/admin.controller.js"
 import { verifyAdmin } from "../middlewares/auth.middleware.js"
 const router = Router()
 
@@ -49,6 +49,9 @@ router.route("update-avatar").patch(verifyAdmin,upload.single("avatar"), updateA
 
 //change current password
 router.route("/change-current-password").patch(verifyAdmin, changeCurrentPassword)
+
+//get admin
+router.route("/get-admin").get(verifyAdmin, getAdmin)
 
 
 
