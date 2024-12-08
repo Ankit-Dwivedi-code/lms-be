@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Razorpay Integration</title>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+  <h1>Pay with Razorpay</h1>
+  <button id="rzp-button">Pay Now</button>
+
+  <script>
+    document.getElementById("rzp-button").onclick = async function () {
+      const response = await fetch("/api/a2/payment/initialize-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: 50000 }), // Amount in smallest currency unit
+      });
+      const order = await response.json();
+
+      const options = {
+        key: "rzp_test_I8AFFYgaUabtEM", // Replace with your key_id
+        amount: order.amount,
+        currency: order.currency,
+        name: "Your Company Name",
+        description: "Test Transaction",
+        order_id: order.id, // Order ID from Razorpay API
+        handler: async function (response) {
+          // Verify payment
+          const verifyResponse = await fetch("/api/a2/payment/verify-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(response),
+          });
+          const verifyResult = await verifyResponse.text();
+          alert(verifyResult);
+        },
+        prefill: {
+          name: "Test User",
+          email: "test.user@example.com",
+          contact: "9999999999",
+        },
+        theme: { color: "#3399cc" },
+      };
+
+      const rzp = new Razorpay(options);
+      rzp.open();
+    };
+  </script>
+</body>
+</html>
