@@ -21,6 +21,7 @@
     "cloudinary": "^2.5.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "jsonwebtoken": "^9.0.2",
@@ -28,6 +29,7 @@
     "mongoose-aggregate-paginate-v2": "^1.1.2",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.15",
+    "razorpay": "^2.9.5",
     "resend": "^4.0.0",
     "stripe": "^17.3.1",
     "ulid": "^2.3.0"
