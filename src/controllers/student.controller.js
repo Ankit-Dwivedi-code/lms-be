@@ -5,7 +5,8 @@ import { uploadOnCloudinary } from '../utils/cloudinary.js';
 import { ApiResponse } from '../utils/apiResponse.js';
 import { generateOtp } from '../utils/otpGenerator.js';
 import { sendMail } from '../utils/sendEmail.js';
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
+import { v2 as cloudinary } from "cloudinary";
 
 const generateAccessAndRefreshTokens = async (studentId) => {
   try {
@@ -373,38 +374,43 @@ const getCurrentStudent = asyncHandler(async(req, res)=>{
 })
 
 const updateStudentAvatar = asyncHandler(async (req, res) => {
+  // Ensure a file was uploaded
+  if (!req.file || !req.file.path) {
+    throw new ApiError(400, "Please provide a valid avatar file");
+  }
+
   const avatarLocalPath = req.file.path;
 
-  if (!avatarLocalPath) {
-      throw new ApiError(400, "Please provide the avatar");
-  }
-
+  // Find the student in the database
   const student = await Student.findById(req.student._id);
-
   if (!student) {
-      throw new ApiError(400, "Student not found");
+    throw new ApiError(404, "Student not found");
   }
 
-  // Delete old avatar from Cloudinary if it exists
-  if (student.avatarPublicId) {
+  try {
+    // Delete old avatar from Cloudinary if it exists
+    if (student.avatarPublicId) {
       await cloudinary.uploader.destroy(student.avatarPublicId);
-  }
+    }
 
-  // Upload new avatar to Cloudinary
-  const avatar = await uploadOnCloudinary(avatarLocalPath);
+    // Upload new avatar to Cloudinary
+    const avatar = await uploadOnCloudinary(avatarLocalPath);
+    if (!avatar?.url || !avatar?.public_id) {
+      throw new ApiError(500, "Error uploading avatar to Cloudinary");
+    }
 
-  if (!avatar?.url || !avatar?.public_id) {
-      throw new ApiError(400, "Error while uploading avatar");
-  }
+    // Update student record with new avatar URL and public ID
+    student.avatar = avatar.url;
+    student.avatarPublicId = avatar.public_id;
+    await student.save();
 
-  // Update student with new avatar URL and public ID
-  student.avatar = avatar.url;
-  student.avatarPublicId = avatar.public_id;
-  await student.save();
-
-  return res
+    return res
       .status(200)
       .json(new ApiResponse(200, student, "Avatar uploaded successfully"));
+  } catch (error) {
+    throw new ApiError(500, `Avatar update failed: ${error.message}`);
+  }
 });
+
 
 export { registerStudent, verifyOtp, loginStudent, verifyLoginOtp,resendOtp, logoutStudent, renewRefreshToken, resetPassword, verifyForgotPasswordOtp, forgotPassword, getCurrentStudent, changeCurrentPassword, updateStudentAvatar };

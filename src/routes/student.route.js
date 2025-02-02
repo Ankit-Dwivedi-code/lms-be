@@ -46,7 +46,7 @@ router.route('/change-pass').patch(VerifyStudent, changeCurrentPassword)
 router.route('/get-student').get(VerifyStudent, getCurrentStudent)
 
 //Update avatar
-router.route('/update-avatar').patch(VerifyStudent, updateStudentAvatar)
+router.route("/update-avatar").patch(VerifyStudent,upload.single("avatar"), updateStudentAvatar)
 
 
 export default router

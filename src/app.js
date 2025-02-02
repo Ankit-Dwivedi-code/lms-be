@@ -7,7 +7,7 @@ const app = express(); // Initializing Express app
 // Middleware to handle CORS (Cross-Origin Resource Sharing) with the origin specified in environment variables
 app.use(cors({
     // origin: process.env.CORS_ORIGIN , // Allow only requests from this origin
-    origin:  "http://localhost:5173", // Allow only requests from this origin
+    origin:  "http://localhost:5175", // Allow only requests from this origin
     credentials: true // Enable sending of cookies in cross-origin requests
 }));
 
