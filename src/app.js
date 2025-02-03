@@ -7,7 +7,7 @@ const app = express(); // Initializing Express app
 // Middleware to handle CORS (Cross-Origin Resource Sharing) with the origin specified in environment variables
 app.use(cors({
     // origin: process.env.CORS_ORIGIN , // Allow only requests from this origin
-    origin:  "http://localhost:5175", // Allow only requests from this origin
+    origin:  "http://localhost:5173", // Allow only requests from this origin
     credentials: true // Enable sending of cookies in cross-origin requests
 }));
 
@@ -31,7 +31,7 @@ import adminRouter from "./routes/admin.route.js"
 import trainerRouter  from './routes/trainer.route.js'
 import videoRouter from './routes/video.route.js'
 import courseRouter from './routes/course.route.js'
-import paymentRouter from './routes/payment.route.js'
+import aiResponse from './routes/scrapeData.route.js'
 
 
 
@@ -42,7 +42,7 @@ app.use("/api/a2/admin", adminRouter)
 app.use("/api/a2/trainer", trainerRouter)
 app.use("/api/a2/videos", videoRouter)
 app.use("/api/a2/course", courseRouter)
-app.use("/api/a2/payment", paymentRouter)
+app.use("/api/a2/ai-response", aiResponse)
 
 
 
