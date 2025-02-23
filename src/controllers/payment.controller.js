@@ -93,3 +93,82 @@
 // });
 
 // export { processPayment, initializePayment, verifyPayment };
+
+
+import Razorpay from "razorpay";
+import crypto from "crypto";
+import { Course } from "../models/course.model.js";
+import { Student } from "../models/student.model.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiError } from "../utils/apiError.js";
+import { ApiResponse } from "../utils/apiResponse.js";
+import { ulid } from "ulid";
+
+// Razorpay instance
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_ID,
+  key_secret: process.env.RAZORPAY_SECRET,
+});
+
+// Initialize payment
+const initializePayment = asyncHandler(async (req, res) => {
+  const { courseId } = req.params;
+  const studentId = req.student._id;
+
+  // Validate course existence
+  const course = await Course.findById(courseId);
+  if (!course) throw new ApiError(404, "Course not found");
+
+  const amount = course.price * 100; // Convert to paise (smallest currency unit)
+  const options = {
+    amount: amount,
+    currency: "INR",
+    receipt: req.student._id,
+  };
+
+  try {
+    const order = await razorpay.orders.create(options);
+    return res.status(200).json(new ApiResponse(200, order, "Order created successfully"));
+  } catch (error) {
+    throw new ApiError(500, "Error initializing payment", error);
+  }
+});
+
+// Verify payment and enroll student
+const verifyPayment = asyncHandler(async (req, res) => {
+  const { courseId } = req.params;
+  const studentId = req.student._id;
+  const { order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+  const key_secret = process.env.RAZORPAY_SECRET;
+  const hmac = crypto.createHmac("sha256", key_secret);
+  hmac.update(order_id + "|" + razorpay_payment_id);
+  const generated_signature = hmac.digest("hex");
+
+  if (generated_signature !== razorpay_signature) {
+    throw new ApiError(400, "Payment verification failed");
+  }
+
+  // Validate course and student existence
+  const course = await Course.findById(courseId);
+  if (!course) throw new ApiError(404, "Course not found");
+
+  const student = await Student.findById(studentId);
+  if (!student) throw new ApiError(404, "Student not found");
+
+  // Check if student is already enrolled
+  if (course.enrolledStudents.includes(studentId)) {
+    throw new ApiError(400, "Student is already enrolled in this course");
+  }
+
+  // Enroll student and add course to student's profile
+  course.enrolledStudents.push(studentId);
+  student.enrolledCourses.push(courseId);
+
+  await course.save();
+  await student.save();
+
+  return res.status(200).json(new ApiResponse(200, { course, student }, "Payment successful, student enrolled"));
+});
+
+export { initializePayment, verifyPayment };

@@ -12,7 +12,11 @@ async function getWebsiteContent() {
         // Check if data is already stored in MongoDB 
         const existingData = await ScrapedData.findOne({ url });
 
-        if (existingData && (Date.now() - existingData.timestamp.getTime()) < 3600000) {  // 1 hour cache
+        // if (existingData && (Date.now() - existingData.timestamp.getTime()) < 3600000) {  // 1 hour cache
+        //     console.log("Using cached data...");
+        //     return existingData.content;
+        // }
+        if (existingData) {  // 1 hour cache
             console.log("Using cached data...");
             return existingData.content;
         }

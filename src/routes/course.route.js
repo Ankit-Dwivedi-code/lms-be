@@ -31,7 +31,7 @@ router.route('/edit/:courseId').put(VerifyTrainer, updateCourse)
 router.route('/delete/:courseId').delete(VerifyTrainer, deleteCourse)
 
 // Get a specific course by ID
-router.route('/get/:courseId').get(VerifyTrainer, getCourseById)
+router.route('/get/:courseId').get(getCourseById)
 
 // Get all courses
 router.route('/all').get(VerifyTrainer, getAllCourses)

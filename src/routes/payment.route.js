@@ -1,17 +1,13 @@
-// import express from "express";
-// import {
-//   processPayment,
-//   initializePayment,
-//   verifyPayment,
-// } from "../controllers/payment.controller.js";
-// import { VerifyStudent } from "../middlewares/auth.middleware.js";
+import express from "express";
+import { initializePayment, verifyPayment } from "../controllers/payment.controller.js";
+import { VerifyStudent } from "../middlewares/auth.middleware.js";
 
-// const router = express.Router();
+const router = express.Router();
 
-// // Protected route to process payment and enroll student
-// router.route("/purchase-course/:courseId").post(VerifyStudent, processPayment);
+// Initialize payment (create Razorpay order)
+router.route("/initialize-payment/:courseId").post(VerifyStudent, initializePayment);
 
-// router.route("/initialize-payment").post(initializePayment);
-// router.route("/verify-payment").post(verifyPayment);
+// Verify payment and enroll student after successful payment
+router.route("/verify-payment/:courseId").post(VerifyStudent, verifyPayment);
 
-// export default router;
+export default router;
