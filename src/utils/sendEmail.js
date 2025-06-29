@@ -34,7 +34,7 @@ const sendMail = async (email, otp) => {
           <p style="font-size: 16px; color: #aaa;">Thanks,<br/>The NeuroNest Team</p>
 
           <div style="text-align: center; margin-top: 30px;">
-            <a href="https://neuronest.me" style="display: inline-block; padding: 10px 20px; background-color: #00ffff; color: #000; text-decoration: none; border-radius: 5px; font-weight: bold;">Visit Website</a>
+            <a href="https://www.neuronest.me/" style="display: inline-block; padding: 10px 20px; background-color: #00ffff; color: #000; text-decoration: none; border-radius: 5px; font-weight: bold;">Visit Website</a>
           </div>
         </div>
       `,
