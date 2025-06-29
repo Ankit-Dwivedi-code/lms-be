@@ -8,7 +8,7 @@ import puppeteer from 'puppeteer'
 
 async function getWebsiteContent() {
     try {
-        let url = "https://a2-project-iota.vercel.app/"
+        let url = "https://www.neuronest.me/"
         // Check if data is already stored in MongoDB 
         const existingData = await ScrapedData.findOne({ url });
 
