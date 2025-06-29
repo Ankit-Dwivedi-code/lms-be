@@ -8,7 +8,7 @@ import puppeteer from 'puppeteer'
 
 async function getWebsiteContent() {
     try {
-        let url = "www.neuronest.me"
+        let url = "https://www.neuronest.me"
         // Check if data is already stored in MongoDB 
         const existingData = await ScrapedData.findOne({ url });
 
@@ -26,7 +26,13 @@ async function getWebsiteContent() {
         // Scrape new content if not found in cache
         const browser = await puppeteer.launch({ headless: true });
         const page = await browser.newPage();
+         await page.setUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+    );
+
         await page.goto(url, { waitUntil: "networkidle2" });
+
+        await page.waitForSelector("body");
 
         const content = await page.evaluate(() => document.body.innerText);
         await browser.close();
