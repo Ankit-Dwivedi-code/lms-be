@@ -12,7 +12,7 @@
 
   <script>
     document.getElementById("rzp-button").onclick = async function () {
-      const response = await fetch("/api/a2/payment/initialize-payment", {
+      const response = await fetch("/pay", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount: 50000 }), // Amount in smallest currency unit

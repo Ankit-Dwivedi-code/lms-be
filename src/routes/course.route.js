@@ -11,12 +11,18 @@ import {
     deleteCourse,
     getCourseById,
     getAllCourses,
-    addReview
+    addReview,
+    updateThumbnail
 } from "../controllers/course.controller.js"
 
 const router = Router();
 
-router.route("/publish-course").post(VerifyTrainer, createCourse)
+router.route("/publish-course").post(upload.fields([
+        {
+            name : "thumbnail",
+            maxCount:1,
+        }
+    ]),VerifyTrainer, createCourse)
 
 //get all course videos
 router.route("/get-all-videos").get(VerifyTrainer, getAllCourseVideos)
@@ -27,6 +33,9 @@ router.route("/get-enrolled-students").get(VerifyTrainer, getEnrolledStudents)
 // Edit a specific course
 router.route('/edit/:courseId').put(VerifyTrainer, updateCourse)
 
+// update course thumbnail
+router.route('/update-thumbnail/:courseId').patch(upload.single('thumbnail'), VerifyTrainer, updateThumbnail)
+
 // Delete a specific course
 router.route('/delete/:courseId').delete(VerifyTrainer, deleteCourse)
 
@@ -34,7 +43,7 @@ router.route('/delete/:courseId').delete(VerifyTrainer, deleteCourse)
 router.route('/get/:courseId').get(getCourseById)
 
 // Get all courses
-router.route('/all').get(VerifyTrainer, getAllCourses)
+router.route('/all').get(getAllCourses)
 
 // Route for adding a review and rating to a course
 router.route('/:courseId/review').post(VerifyStudent, addReview);

@@ -3,13 +3,25 @@ import { Course } from '../models/course.model.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/apiError.js';
 import { ApiResponse } from '../utils/apiResponse.js';
+import { uploadOnCloudinary } from '../utils/cloudinary.js';
 import mongoose from "mongoose";
+import { v2 as cloudinary } from "cloudinary";
 
 const createCourse = asyncHandler(async (req, res) => {
     const { courseName, description, category, level, language, price, prerequisites } = req.body;
 
     if (!courseName || !description || !category) {
         throw new ApiError(400, "Course name, description, and category are required!");
+    }
+
+    const thumbnailLocalPath = req.files?.thumbnail?.[0]?.path;
+    if (!thumbnailLocalPath) {
+        throw new ApiError(400, "Course thumbnail is required!");
+    }
+
+    const thumbnailUpload = await uploadOnCloudinary(thumbnailLocalPath);
+    if (!thumbnailUpload?.url) {
+        throw new ApiError(400, "Failed to upload course thumbnail!");
     }
 
     const course = await Course.create({
@@ -21,6 +33,7 @@ const createCourse = asyncHandler(async (req, res) => {
         language,
         price,
         prerequisites,
+        thumbnail: thumbnailUpload.url,
         isPublished: false, // Initially set to false until approved
     });
 
@@ -28,6 +41,7 @@ const createCourse = asyncHandler(async (req, res) => {
         .status(201)
         .json(new ApiResponse(201, course, "Course created successfully"));
 });
+
 
 // Get all videos of a specific course using aggregation
 const getAllCourseVideos = asyncHandler(async (req, res) => {
@@ -127,6 +141,48 @@ const updateCourse = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, updatedCourse, "Course updated successfully"));
 });
 
+const updateThumbnail = asyncHandler(async (req, res) => {
+  const { courseId } = req.params;
+
+  const thumbnailLocalPath = req.file?.path;
+  if (!thumbnailLocalPath) {
+    throw new ApiError(400, "Course thumbnail is required!");
+  }
+
+  const course = await Course.findById(courseId);
+  if (!course) {
+    throw new ApiError(404, "Course not found");
+  }
+
+  try {
+    // Delete old thumbnail from Cloudinary (if exists)
+    if (course.thumbnail) {
+      // Extract public_id from Cloudinary URL
+      const parts = course.thumbnail.split('/');
+      const publicId = parts.slice(parts.indexOf('upload') + 1).join('/').replace(/\.[^/.]+$/, '');
+      await cloudinary.uploader.destroy(publicId);
+    }
+
+    // Upload new thumbnail
+    const thumbnailUpload = await uploadOnCloudinary(thumbnailLocalPath);
+    if (!thumbnailUpload?.url) {
+      throw new ApiError(500, "Error uploading thumbnail to Cloudinary");
+    }
+
+    // Save new thumbnail URL
+    course.thumbnail = thumbnailUpload.url;
+    await course.save();
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, course, "Course thumbnail updated successfully"));
+  } catch (error) {
+    throw new ApiError(500, `Thumbnail update failed: ${error.message}`);
+  }
+});
+
+
+
 // Delete a course
 const deleteCourse = asyncHandler(async (req, res) => {
     const { courseId } = req.params; // Assuming course ID is passed as a route parameter
@@ -213,5 +269,6 @@ export {
     deleteCourse,
     getCourseById,
     getAllCourses,
-    addReview
+    addReview,
+    updateThumbnail
 };

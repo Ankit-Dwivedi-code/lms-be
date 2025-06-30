@@ -61,7 +61,8 @@ const courseSchema = new mongoose.Schema({
         }
     ],
     thumbnail: {
-        type: String
+        type: String, // Cloudinary URL
+        required: true,
     },
     ratings: {
         type: Number,
