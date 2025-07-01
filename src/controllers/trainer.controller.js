@@ -188,9 +188,10 @@ const loginTrainer = asyncHandler(async (req, res) => {
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(trainer._id);
   
     const options = {
-      httpOnly: true,
-      secure: true,
-    };
+    httpOnly: true,
+    secure: true,
+    sameSite: 'None',
+  };
 
     return res
     .status(200)
@@ -242,9 +243,10 @@ const renewRefreshToken = asyncHandler(async (req, res) => {
         const { refreshToken, accessToken } = await generateAccessAndRefreshTokens(trainer._id);
 
         const options = {
-            httpOnly: true,
-            secure: true,
-        };
+    httpOnly: true,
+    secure: true,
+    sameSite: 'None',
+  };
 
         return res
             .status(200)
