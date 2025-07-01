@@ -45,7 +45,7 @@ const createCourse = asyncHandler(async (req, res) => {
 
 // Get all videos of a specific course using aggregation
 const getAllCourseVideos = asyncHandler(async (req, res) => {
-    const { courseId } = req.query; // Assuming course ID is passed in the URL
+    const { courseId } = req.params; // Now getting courseId from URL params
 
     const courseVideos = await Course.aggregate([
         { $match: { _id: new mongoose.Types.ObjectId(courseId) } }, // Match the course by ID
@@ -60,7 +60,7 @@ const getAllCourseVideos = asyncHandler(async (req, res) => {
         {
             $unwind: {
                 path: '$videos',
-                preserveNullAndEmptyArrays: true // Keep courses even if they have no videos
+                preserveNullAndEmptyArrays: true // Keep course even if no videos
             }
         },
         {
@@ -81,12 +81,15 @@ const getAllCourseVideos = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Course not found or no videos available");
     }
 
-    return res.status(200).json(new ApiResponse(200, courseVideos, "Course videos retrieved successfully"));
+    return res.status(200).json(
+        new ApiResponse(200, courseVideos, "Course videos retrieved successfully")
+    );
 });
+
 
 // Get all students enrolled in a specific course using aggregation
 const getEnrolledStudents = asyncHandler(async (req, res) => {
-    const { courseId } = req.query;
+    const { courseId } = req.params;
 
     const enrolledStudents = await Course.aggregate([
         { $match: { _id: new mongoose.Types.ObjectId(courseId) } }, // Match the course by ID
@@ -101,7 +104,7 @@ const getEnrolledStudents = asyncHandler(async (req, res) => {
         {
             $unwind: {
                 path: '$students',
-                preserveNullAndEmptyArrays: true // Keep courses even if there are no students
+                preserveNullAndEmptyArrays: true // Keep course even if no students
             }
         },
         {
@@ -119,8 +122,11 @@ const getEnrolledStudents = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Course not found or no enrolled students");
     }
 
-    return res.status(200).json(new ApiResponse(200, enrolledStudents, "Enrolled students retrieved successfully"));
+    return res.status(200).json(
+        new ApiResponse(200, enrolledStudents, "Enrolled students retrieved successfully")
+    );
 });
+
 
 // Edit course details
 const updateCourse = asyncHandler(async (req, res) => {
@@ -260,6 +266,18 @@ const addReview = asyncHandler(async (req, res) => {
     return res.status(201).json(new ApiResponse(201, { course }, "Review added successfully"));
 });
 
+// Get all courses created by the current trainer
+const getMyCourses = asyncHandler(async (req, res) => {
+    const trainerId = req.trainer._id;
+
+    const courses = await Course.find({ owner: trainerId }).sort({ createdAt: -1 });
+
+    return res.status(200).json(
+        new ApiResponse(200, courses, "Trainer courses fetched successfully")
+    );
+});
+
+
 
 export {
     createCourse,
@@ -270,5 +288,6 @@ export {
     getCourseById,
     getAllCourses,
     addReview,
-    updateThumbnail
+    updateThumbnail,
+    getMyCourses
 };
