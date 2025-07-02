@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { changeCurrentPassword, forgotPassword, getCurrentStudent, loginStudent, logoutStudent, registerStudent, renewRefreshToken, resendOtp, resetPassword, updateStudentAvatar, verifyForgotPasswordOtp, verifyLoginOtp, verifyOtp } from "../controllers/student.controller.js"
+import { changeCurrentPassword, forgotPassword, getCurrentStudent, loginStudent, logoutStudent, registerStudent, renewRefreshToken, resendOtp, resetPassword, updateStudentAvatar, verifyForgotPasswordOtp, verifyLoginOtp } from "../controllers/student.controller.js"
 import { upload } from "../middlewares/multer.middleware.js" 
 import { VerifyStudent } from "../middlewares/auth.middleware.js"
 
@@ -18,7 +18,7 @@ router.route("/register").post(
     registerStudent
 )
 //verify otp 
-router.post('/verify-otp', verifyOtp);
+// router.post('/verify-otp', verifyOtp);
 
 //Login
 router.route('/login').post(loginStudent)

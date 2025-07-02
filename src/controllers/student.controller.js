@@ -25,7 +25,7 @@ const generateAccessAndRefreshTokens = async (studentId) => {
 };
 
 const registerStudent = asyncHandler(async (req, res) => {
-  const { username, email, password,phone, highestQualification,dateOfBirth } = req.body;
+  const { username, email, password, phone, highestQualification, dateOfBirth } = req.body;
 
   if ([username, email, password, phone, highestQualification, dateOfBirth].some((field) => !field)) {
     throw new ApiError(400, 'All fields are required');
@@ -46,13 +46,6 @@ const registerStudent = asyncHandler(async (req, res) => {
     throw new ApiError(400, 'Failed to upload avatar image');
   }
 
-  const { otp, otpExpires } = generateOtp();
-  if (!otp || !otpExpires) {
-    throw new ApiError(500, "Internal server error");
-  }
-
-  await sendMail(email, otp);
-
   const student = new Student({
     username,
     email,
@@ -62,45 +55,45 @@ const registerStudent = asyncHandler(async (req, res) => {
     dateOfBirth,
     avatar: avatar.url,
     avatarPublicId: avatar.public_id,
-    otp,
-    otpExpires
+    isVerified: true, // Directly mark verified
   });
 
   await student.save();
 
   return res.status(201).json(
-    new ApiResponse(201, { email }, 'OTP sent to your email')
+    new ApiResponse(201, { email }, 'Student registered successfully')
   );
 });
 
-const verifyOtp = asyncHandler(async (req, res) => {
-  const { email, otp } = req.body;
 
-  if (!email || !otp) {
-    throw new ApiError(400, 'Email and OTP are required');
-  }
+// const verifyOtp = asyncHandler(async (req, res) => {
+//   const { email, otp } = req.body;
 
-  const student = await Student.findOne({ email });
+//   if (!email || !otp) {
+//     throw new ApiError(400, 'Email and OTP are required');
+//   }
 
-  if (!student || student.isVerified) {
-    throw new ApiError(400, 'Invalid or already verified student');
-  }
+//   const student = await Student.findOne({ email });
 
-  if (student.otp !== otp || student.otpExpires < Date.now()) {
-    throw new ApiError(400, 'Invalid or expired OTP');
-  }
+//   if (!student || student.isVerified) {
+//     throw new ApiError(400, 'Invalid or already verified student');
+//   }
 
-  student.isVerified = true;
-  student.otp = undefined;
-  student.otpExpires = undefined;
-  await student.save();
+//   if (student.otp !== otp || student.otpExpires < Date.now()) {
+//     throw new ApiError(400, 'Invalid or expired OTP');
+//   }
 
-  const verifiedStudent = await Student.findById(student._id).select('-password -refreshToken');
+//   student.isVerified = true;
+//   student.otp = undefined;
+//   student.otpExpires = undefined;
+//   await student.save();
 
-  return res.status(200).json(
-    new ApiResponse(200, verifiedStudent, 'Student verified and registered successfully')
-  );
-});
+//   const verifiedStudent = await Student.findById(student._id).select('-password -refreshToken');
+
+//   return res.status(200).json(
+//     new ApiResponse(200, verifiedStudent, 'Student verified and registered successfully')
+//   );
+// });
 
 const loginStudent = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -413,4 +406,4 @@ const updateStudentAvatar = asyncHandler(async (req, res) => {
 });
 
 
-export { registerStudent, verifyOtp, loginStudent, verifyLoginOtp,resendOtp, logoutStudent, renewRefreshToken, resetPassword, verifyForgotPasswordOtp, forgotPassword, getCurrentStudent, changeCurrentPassword, updateStudentAvatar };
+export { registerStudent, loginStudent, verifyLoginOtp,resendOtp, logoutStudent, renewRefreshToken, resetPassword, verifyForgotPasswordOtp, forgotPassword, getCurrentStudent, changeCurrentPassword, updateStudentAvatar };
