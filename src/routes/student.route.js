@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { changeCurrentPassword, forgotPassword, getCurrentStudent, getEnrolledCourses, loginStudent, logoutStudent, registerStudent, renewRefreshToken, resendOtp, resetPassword, updateStudentAvatar, verifyForgotPasswordOtp, verifyLoginOtp } from "../controllers/student.controller.js"
+import { changeCurrentPassword, checkEnrolledCourses, forgotPassword, getCurrentStudent, getEnrolledCourses, loginStudent, logoutStudent, registerStudent, renewRefreshToken, resendOtp, resetPassword, updateStudentAvatar, verifyForgotPasswordOtp, verifyLoginOtp } from "../controllers/student.controller.js"
 import { upload } from "../middlewares/multer.middleware.js" 
 import { VerifyStudent } from "../middlewares/auth.middleware.js"
 
@@ -50,6 +50,9 @@ router.route("/update-avatar").patch(VerifyStudent,upload.single("avatar"), upda
 
 //get enrolled courses
 router.route('/get-enrolled-courses').get(VerifyStudent, getEnrolledCourses)
+
+// Check enrolled courses of the student
+router.route('/check-enrolled-courses/:courseId').get(VerifyStudent, checkEnrolledCourses)
 
 
 export default router

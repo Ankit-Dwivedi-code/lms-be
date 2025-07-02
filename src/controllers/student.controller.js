@@ -420,5 +420,20 @@ const getEnrolledCourses = asyncHandler(async (req, res) => {
   );
 });
 
+// check enrolled courses of the student
+const checkEnrolledCourses = asyncHandler(async (req, res) => {
+  const courseId = req.params.courseId;
+  const studentId = req.student._id;
+  const student = await Student.findById(studentId).populate('enrolledCourses');
+  if (!student) {
+    throw new ApiError(404, "Student not found");
+  }
+  const isEnrolled = student.enrolledCourses.some(course => course._id.toString() === courseId);
+  return res.status(200).json(
+    new ApiResponse(200, { isEnrolled }, "Enrollment status fetched successfully")
+  );  
+}
+);
 
-export { registerStudent, loginStudent, verifyLoginOtp,resendOtp, logoutStudent, renewRefreshToken, resetPassword, verifyForgotPasswordOtp, forgotPassword, getCurrentStudent, changeCurrentPassword, updateStudentAvatar, getEnrolledCourses };
+
+export { registerStudent, loginStudent, verifyLoginOtp,resendOtp, logoutStudent, renewRefreshToken, resetPassword, verifyForgotPasswordOtp, forgotPassword, getCurrentStudent, changeCurrentPassword, updateStudentAvatar, getEnrolledCourses, checkEnrolledCourses };
