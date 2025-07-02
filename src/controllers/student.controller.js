@@ -405,5 +405,20 @@ const updateStudentAvatar = asyncHandler(async (req, res) => {
   }
 });
 
+// get all enrolled courses of the student
+const getEnrolledCourses = asyncHandler(async (req, res) => {
+  const studentId = req.student._id;
+  const student = await Student.findById(studentId).populate('enrolledCourses');
+  if (!student) {
+    throw new ApiError(404, "Student not found");
+  }
+  if (student.enrolledCourses.length === 0) {
+    return res.status(200).json(new ApiResponse(200, [], "No courses enrolled"));
+  }
+  return res.status(200).json(
+    new ApiResponse(200, student.enrolledCourses, "Enrolled courses fetched successfully")
+  );
+});
 
-export { registerStudent, loginStudent, verifyLoginOtp,resendOtp, logoutStudent, renewRefreshToken, resetPassword, verifyForgotPasswordOtp, forgotPassword, getCurrentStudent, changeCurrentPassword, updateStudentAvatar };
+
+export { registerStudent, loginStudent, verifyLoginOtp,resendOtp, logoutStudent, renewRefreshToken, resetPassword, verifyForgotPasswordOtp, forgotPassword, getCurrentStudent, changeCurrentPassword, updateStudentAvatar, getEnrolledCourses };
