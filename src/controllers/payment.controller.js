@@ -123,7 +123,7 @@ const initializePayment = asyncHandler(async (req, res) => {
   const options = {
     amount: amount,
     currency: "INR",
-    receipt: req.student._id,
+    receipt: studentId,
   };
 
   try {
@@ -156,19 +156,22 @@ const verifyPayment = asyncHandler(async (req, res) => {
   const student = await Student.findById(studentId);
   if (!student) throw new ApiError(404, "Student not found");
 
-  // Check if student is already enrolled
-  if (course.enrolledStudents.includes(studentId)) {
+  // Check for duplicate enrollment (safe check using .toString())
+  if (course.enrolledStudents.some(id => id.toString() === studentId.toString())) {
     throw new ApiError(400, "Student is already enrolled in this course");
   }
 
-  // Enroll student and add course to student's profile
+  // Enroll student
   course.enrolledStudents.push(studentId);
   student.enrolledCourses.push(courseId);
 
   await course.save();
   await student.save();
 
-  return res.status(200).json(new ApiResponse(200, { course, student }, "Payment successful, student enrolled"));
+  return res.status(200).json(
+    new ApiResponse(200, { course, student }, "Payment successful, student enrolled")
+  );
 });
+
 
 export { initializePayment, verifyPayment };
