@@ -3,8 +3,8 @@ import mongoose from 'mongoose';
 import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
 
 const videoSchema = new mongoose.Schema({
-    youtubeLink: {
-        type: String, // YouTube link
+    video: {
+        type: String, // cloudinary URL for the video
         required: true,
     },
     thumbnail: {
