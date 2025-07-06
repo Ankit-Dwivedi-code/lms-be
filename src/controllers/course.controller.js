@@ -31,7 +31,7 @@ const createCourse = asyncHandler(async (req, res) => {
         category,
         level,
         language,
-        price,
+        price: parseInt(price),
         prerequisites,
         thumbnail: thumbnailUpload.url,
         isPublished: false, // Initially set to false until approved
