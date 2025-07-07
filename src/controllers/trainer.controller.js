@@ -310,9 +310,9 @@ const updatetrainerAvatar = asyncHandler(async (req, res) => {
 
 // Update trainer details
 const updatetrainerDetails = asyncHandler(async (req, res) => {
-    const { username, email, subjectname  } = req.body;
+    const { username, email, subjectname } = req.body;
 
-    if (![username, email, subjectname ].some(field => field)) {
+    if (![username, email, subjectname].some(field => field)) {
         throw new ApiError(400, "Please provide at least one detail to update");
     }
 
@@ -321,17 +321,21 @@ const updatetrainerDetails = asyncHandler(async (req, res) => {
     if (email) updateFields.email = email;
     if (subjectname) updateFields.subjectname = subjectname;
 
-    const trainer = await trainer.findByIdAndUpdate(req.trainer._id,
+    const updatedTrainer = await Trainer.findByIdAndUpdate(
+        req.trainer._id,
         { $set: updateFields },
         { new: true }
     ).select("-password");
 
-    if (!trainer) {
+    if (!updatedTrainer) {
         throw new ApiError(400, "Trainer not found");
     }
 
-    return res.status(200).json(new ApiResponse(200, trainer, "Trainer details updated successfully"));
+    return res.status(200).json(
+        new ApiResponse(200, updatedTrainer, "Trainer details updated successfully")
+    );
 });
+
 
 // Resend OTP
 const resendOtp = asyncHandler(async (req, res) => {
