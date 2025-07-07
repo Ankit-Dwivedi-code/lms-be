@@ -18,7 +18,7 @@ const generateAccessAndRefreshTokens = async (adminId) => {
     const accessToken = admin.generateAccessToken();
     const refreshToken = admin.generateRefreshToken();
 
-    console.log("refresh Token is", refreshToken);
+    // console.log("refresh Token is", refreshToken);
 
     admin.refreshToken = refreshToken;
     await admin.save({ validateBeforeSave: false });
