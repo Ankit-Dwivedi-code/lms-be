@@ -60,12 +60,17 @@ router.route("/change-current-password").post(VerifyTrainer, changeCurrentPasswo
 router.route("/get-trainer").get(VerifyTrainer, getCurrenttrainer)
 
 //update trainer avatar
-router.route("/update-avatar").patch(upload.fields([
+router.route("/update-avatar").patch(
+    upload.fields([
         {
             name: "avatar",
-            maxCount: 1,
+            maxCount: 1
         }
-    ]),VerifyTrainer, updatetrainerAvatar)
+    ]),
+    VerifyTrainer,
+    updatetrainerAvatar
+);
+
 
 //update trainer email username or subject name
 router.route("/update-details").patch(VerifyTrainer, updatetrainerDetails)

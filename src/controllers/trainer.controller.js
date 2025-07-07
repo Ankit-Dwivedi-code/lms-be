@@ -284,7 +284,7 @@ const getCurrenttrainer = asyncHandler(async (req, res) => {
 
 // Update trainer avatar
 const updatetrainerAvatar = asyncHandler(async (req, res) => {
-    const avatarLocalPath = req.file.path;
+    const avatarLocalPath = req.files?.avatar?.[0]?.path;
 
     if (!avatarLocalPath) {
         throw new ApiError(400, "Please provide the avatar");
@@ -292,33 +292,40 @@ const updatetrainerAvatar = asyncHandler(async (req, res) => {
 
     const avatar = await uploadOnCloudinary(avatarLocalPath);
 
-    if (!avatar.url) {
-        throw new ApiError(400, "Error while uploading avatar");
+    if (!avatar?.url) {
+        throw new ApiError(400, "Error while uploading avatar to Cloudinary");
     }
 
-    const trainer = await trainer.findByIdAndUpdate(req.trainer._id,
-        { $set: [{ avatar: avatar.url }, {avatarPublicId: avatar.public_id}] },
+    const updatedTrainer = await Trainer.findByIdAndUpdate(
+        req.trainer._id,
+        {
+            $set: {
+                avatar: avatar.url,
+                avatarPublicId: avatar.public_id
+            }
+        },
         { new: true }
     ).select("-password");
 
-    if (!trainer) {
-        throw new ApiError(400, "trainer not found");
+    if (!updatedTrainer) {
+        throw new ApiError(400, "Trainer not found");
     }
 
-    return res.status(200).json(new ApiResponse(200, trainer, "Avatar updated successfully"));
+    return res.status(200).json(
+        new ApiResponse(200, updatedTrainer, "Avatar updated successfully")
+    );
 });
 
 // Update trainer details
 const updatetrainerDetails = asyncHandler(async (req, res) => {
-    const { username, email, subjectname } = req.body;
+    const { username, subjectname } = req.body;
 
-    if (![username, email, subjectname].some(field => field)) {
-        throw new ApiError(400, "Please provide at least one detail to update");
+    if (![username, subjectname].some(field => field)) {
+        throw new ApiError(400, "Please provide at least one detail (username or subjectname) to update");
     }
 
     const updateFields = {};
     if (username) updateFields.username = username;
-    if (email) updateFields.email = email;
     if (subjectname) updateFields.subjectname = subjectname;
 
     const updatedTrainer = await Trainer.findByIdAndUpdate(
