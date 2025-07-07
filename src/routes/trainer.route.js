@@ -14,7 +14,8 @@ import {
     updatetrainerAvatar,
     updatetrainerDetails,
     resendOtp,
-    verifyLoginOtp
+    verifyLoginOtp,
+    forgotPassword
 } from '../controllers/trainer.controller.js';
 
 const router = Router();
@@ -41,6 +42,9 @@ router.route("/verify-login").post(verifyLoginOtp)
 
 router.route("/resend-otp").post(resendOtp)
 
+// forgot password
+router.route("/forgot-password").post(forgotPassword)
+
 //Secured routes
 //********************************************************************//
 //logout trainers
@@ -56,7 +60,12 @@ router.route("/change-current-password").post(VerifyTrainer, changeCurrentPasswo
 router.route("/get-trainer").get(VerifyTrainer, getCurrenttrainer)
 
 //update trainer avatar
-router.route("/update-avatar").patch(VerifyTrainer, updatetrainerAvatar)
+router.route("/update-avatar").patch(upload.fields([
+        {
+            name: "avatar",
+            maxCount: 1,
+        }
+    ]),VerifyTrainer, updatetrainerAvatar)
 
 //update trainer email username or subject name
 router.route("/update-details").patch(VerifyTrainer, updatetrainerDetails)
