@@ -220,20 +220,23 @@ const getVideoWithComments = asyncHandler(async (req, res) => {
 
 // get all videos of particular course
 const getVideosByCourseId = asyncHandler(async (req, res) => {
-    const { courseId } = req.params;
+  const { courseId } = req.params;
 
-    if (!isValidObjectId(courseId)) {
-        throw new ApiError(400, "Invalid course ID");
-    }
+  if (!isValidObjectId(courseId)) {
+    throw new ApiError(400, "Invalid course ID");
+  }
 
-    const videos = await Video.find({ course: courseId }).populate('owner', 'name email');
+  const videos = await Video.find({ course: courseId }).populate('owner', 'name email');
 
-    if (!videos || videos.length === 0) {
-        return res.status(404).json(new ApiResponse(404, [], "No videos found for this course"));
-    }
+  if (!videos || videos.length === 0) {
+    return res.status(200).json(
+      new ApiResponse(200, [], "No videos for now, please wait for content to be uploaded.")
+    );
+  }
 
-    return res.status(200).json(new ApiResponse(200, videos, "Videos fetched successfully"));
+  return res.status(200).json(new ApiResponse(200, videos, "Videos fetched successfully"));
 });
+
 
 export {
     publishAVideo,
