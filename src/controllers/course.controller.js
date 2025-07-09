@@ -280,6 +280,22 @@ const getMyCourses = asyncHandler(async (req, res) => {
     );
 });
 
+// check if student reviewed the course
+const hasStudentReviewedCourse = async (req, res) => {
+    const { courseId } = req.params; // Get course ID from request parameters
+    const studentId = req.student._id; // Student ID from auth middleware
+    // Validate course existence
+    const course = await Course.findById(courseId);
+    if (!course) throw new ApiError(404, "Course not found");
+    // Check if the student has already reviewed this course
+    const existingReview = course.reviews.find(review => review.student.toString() === studentId.toString());
+    if (existingReview) {
+        return res.status(200).json(new ApiResponse(200, { reviewed: true }, "Student has reviewed this course"));
+    }
+    return res.status(200).json(new ApiResponse(200, { reviewed: false }, "Student has not reviewed this course"));
+};
+
+
 
 
 export {
@@ -292,5 +308,6 @@ export {
     getAllCourses,
     addReview,
     updateThumbnail,
-    getMyCourses
+    getMyCourses,
+    hasStudentReviewedCourse
 };

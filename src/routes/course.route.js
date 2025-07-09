@@ -13,7 +13,8 @@ import {
     getAllCourses,
     addReview,
     updateThumbnail,
-    getMyCourses
+    getMyCourses,
+    hasStudentReviewedCourse
 } from "../controllers/course.controller.js"
 
 const router = Router();
@@ -52,5 +53,8 @@ router.route('/all').get(getAllCourses)
 
 // Route for adding a review and rating to a course
 router.route('/:courseId/review').post(VerifyStudent, addReview);
+
+// Check if student has reviewed the course
+router.route('/:courseId/reviewed').get(VerifyStudent, hasStudentReviewedCourse);
 
 export default router
