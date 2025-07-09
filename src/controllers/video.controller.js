@@ -229,7 +229,7 @@ const getVideosByCourseId = asyncHandler(async (req, res) => {
     const videos = await Video.find({ course: courseId }).populate('owner', 'name email');
 
     if (!videos || videos.length === 0) {
-        throw new ApiError(404, "No videos found for this course");
+        return res.status(404).json(new ApiResponse(404, [], "No videos found for this course"));
     }
 
     return res.status(200).json(new ApiResponse(200, videos, "Videos fetched successfully"));
