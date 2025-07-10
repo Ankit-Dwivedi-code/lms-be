@@ -196,8 +196,16 @@ const logoutStudent = asyncHandler(async (req, res) => {
   student.isVerified = false;
   await student.save({ validateBeforeSave: false });
 
-  res.clearCookie("accessToken");
-  res.clearCookie("refreshToken");
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
 
   return res.status(200).json(new ApiResponse(200, {}, "Student logged out successfully"));
 });
