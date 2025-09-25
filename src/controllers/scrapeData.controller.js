@@ -59,7 +59,7 @@ const getAiResponse = asyncHandler(async (req, res) =>{
         const response = await axios.post(
             "https://api.groq.com/openai/v1/chat/completions",
             {
-                model: "llama3-8b-8192",
+                model: "llama-3.3-70b-versatile",
                 messages: [
                     { role: "system", content: "You are an AI chatbot using website data. You have to give a minimal answer for the user question like in 50-60 words maximum" },
                     { role: "user", content: `Website content:\n${websiteContent}\n\nUser: ${message}` }
@@ -69,6 +69,7 @@ const getAiResponse = asyncHandler(async (req, res) =>{
                 headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}` }
             }
         );
+        console.log(response.data);
 
         res.status(200)
         .json(new ApiResponse(200, { response: response.data.choices[0].message.content }, "Responsed!"))
