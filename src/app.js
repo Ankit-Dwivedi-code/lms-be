@@ -7,7 +7,7 @@ const app = express(); // Initializing Express app
 // Middleware to handle CORS (Cross-Origin Resource Sharing) with the origin specified in environment variables
 app.use(cors({
     // origin: "http://localhost:5173" , // Allow only requests from this origin
-    origin:  "https://www.neuronest.me", // Allow only requests from this origin
+    origin:  "https://www.neuronest.space", // Allow only requests from this origin
     credentials: true // Enable sending of cookies in cross-origin requests
 }));
 
