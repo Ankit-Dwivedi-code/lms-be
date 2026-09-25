@@ -59,7 +59,7 @@ const getAiResponse = asyncHandler(async (req, res) =>{
         const response = await axios.post(
             "https://api.groq.com/openai/v1/chat/completions",
             {
-                model: "llama-3.3-70b-versatile",
+                model: "openai/gpt-oss-120b",
                 messages: [
                     { role: "system", content: "You are an AI chatbot using website data. You have to give a minimal answer for the user question like in 50-60 words maximum" },
                     { role: "user", content: `Website content:\n${websiteContent}\n\nUser: ${message}` }
