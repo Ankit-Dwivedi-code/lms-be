@@ -10,7 +10,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const sendMail = async (email, otp) => {
   try {
     await resend.emails.send({
-      from: 'NeuroNest <otp@neuronest.me>',
+      from: 'NeuroNest <otp@neuronest.space>',
       to: [email],
       subject: `Your OTP is ${otp}`,
       html: `
